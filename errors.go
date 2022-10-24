@@ -147,26 +147,31 @@ func WithStack(err error) error {
 		return nil
 	}
 	return &withStack{
-		err,
+		withMessage{
+			cause: err,
+			msg:   "",
+		},
 		callers(),
 	}
 }
 
 type withStack struct {
-	error
+	withMessage
 	*stack
 }
-
-func (w *withStack) Cause() error { return w.error }
-
-// Unwrap provides compatibility for Go 1.13 error chains.
-func (w *withStack) Unwrap() error { return w.error }
 
 func (w *withStack) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v", w.Cause())
+			if w.Cause() != nil {
+				fmt.Fprintf(s, "%+v", w.Cause())
+				fmt.Fprintf(s, globalOptions.StackSep)
+			}
+			if w.msg != "" {
+				io.WriteString(s, w.msg)
+				fmt.Fprintf(s, globalOptions.StackSep)
+			}
 			w.stack.Format(s, verb)
 			return
 		}
@@ -185,12 +190,11 @@ func Wrap(err error, message string) error {
 	if err == nil {
 		return nil
 	}
-	err = &withMessage{
-		cause: err,
-		msg:   message,
-	}
 	return &withStack{
-		err,
+		withMessage{
+			cause: err,
+			msg:   message,
+		},
 		callers(),
 	}
 }
@@ -202,12 +206,11 @@ func Wrapf(err error, format string, args ...interface{}) error {
 	if err == nil {
 		return nil
 	}
-	err = &withMessage{
-		cause: err,
-		msg:   fmt.Sprintf(format, args...),
-	}
 	return &withStack{
-		err,
+		withMessage{
+			cause: err,
+			msg:   fmt.Sprintf(format, args...),
+		},
 		callers(),
 	}
 }
@@ -241,17 +244,29 @@ type withMessage struct {
 	msg   string
 }
 
-func (w *withMessage) Error() string { return w.msg + ": " + w.cause.Error() }
-func (w *withMessage) Cause() error  { return w.cause }
+func (w *withMessage) Error() string {
+	if w.cause == nil {
+		return w.msg
+	}
+	return w.msg + ": " + w.cause.Error()
+}
+func (w *withMessage) Cause() error { return w.cause }
 
 // Unwrap provides compatibility for Go 1.13 error chains.
-func (w *withMessage) Unwrap() error { return w.cause }
+func (w *withMessage) Unwrap() error {
+	err := w.cause
+	w.cause = nil
+	return err
+}
 
 func (w *withMessage) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			fmt.Fprintf(s, "%+v\n", w.Cause())
+			if w.Cause() != nil {
+				fmt.Fprintf(s, "%+v", w.Cause())
+				fmt.Fprintf(s, globalOptions.StackSep)
+			}
 			io.WriteString(s, w.msg)
 			return
 		}
