@@ -129,6 +129,7 @@ func (f *fundamental) Format(s fmt.State, verb rune) {
 	case 'v':
 		if s.Flag('+') {
 			io.WriteString(s, f.msg)
+			io.WriteString(s, globalOptions.MsgSep)
 			f.stack.Format(s, verb)
 			return
 		}

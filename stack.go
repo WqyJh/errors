@@ -144,9 +144,11 @@ func (s *stack) Format(st fmt.State, verb rune) {
 	case 'v':
 		switch {
 		case st.Flag('+'):
-			for _, pc := range *s {
+			for i, pc := range *s {
 				f := Frame(pc)
-				fmt.Fprintf(st, globalOptions.StackSep)
+				if i != 0 {
+					fmt.Fprintf(st, globalOptions.StackSep)
+				}
 				fmt.Fprintf(st, "%+v", f)
 			}
 		}
