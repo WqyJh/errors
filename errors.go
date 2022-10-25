@@ -128,8 +128,10 @@ func (f *fundamental) Format(s fmt.State, verb rune) {
 	switch verb {
 	case 'v':
 		if s.Flag('+') {
-			io.WriteString(s, f.msg)
-			io.WriteString(s, globalOptions.MsgSep)
+			if f.msg != "" {
+				io.WriteString(s, f.msg)
+				io.WriteString(s, globalOptions.MsgSep)
+			}
 			f.stack.Format(s, verb)
 			return
 		}
@@ -248,6 +250,9 @@ type withMessage struct {
 func (w *withMessage) Error() string {
 	if w.cause == nil {
 		return w.msg
+	}
+	if w.msg == "" {
+		return w.cause.Error()
 	}
 	return w.msg + ": " + w.cause.Error()
 }

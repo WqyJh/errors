@@ -12,7 +12,7 @@ var (
 	globalOptions = Config{
 		FuncSep:  "\t",
 		StackSep: "\n",
-		MsgSep:   " : ",
+		MsgSep:   "\n",
 	}
 )
 
