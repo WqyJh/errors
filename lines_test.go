@@ -61,6 +61,19 @@ func matchLines(t *testing.T, want []string, got []string) {
 	}
 }
 
+type codeError struct {
+	Code int
+	Msg  string
+}
+
+func NewCodeError(code int, msg string) *codeError {
+	return &codeError{Code: code, Msg: msg}
+}
+
+func (e *codeError) Error() string {
+	return fmt.Sprintf("code error: %d, %s", e.Code, e.Msg)
+}
+
 func TestLinesNoStack(t *testing.T) {
 	tests := []struct {
 		lines []string
@@ -92,6 +105,13 @@ func TestLinesNoStack(t *testing.T) {
 			"bar 1",
 			"foo 1",
 		}, Wrapf(WithStack(Errorf("foo %d", 1)), "bar %d", 1)},
+		{[]string{
+			"code error: 1, foo",
+		}, NewCodeError(1, "foo")},
+		{[]string{
+			"bar",
+			"code error: 1, foo",
+		}, Wrap(NewCodeError(1, "foo"), "bar")},
 	}
 
 	for _, tt := range tests {

@@ -288,9 +288,7 @@ func (w *withMessage) Cause() error { return w.cause }
 
 // Unwrap provides compatibility for Go 1.13 error chains.
 func (w *withMessage) Unwrap() error {
-	err := w.cause
-	w.cause = nil
-	return err
+	return w.cause
 }
 
 func (w *withMessage) Format(s fmt.State, verb rune) {
