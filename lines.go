@@ -1,7 +1,7 @@
 package errors
 
 type liner interface {
-	line(stack bool) string
+	errorLine(stack bool) string
 }
 
 func Lines(err error, stack bool) []string {
@@ -10,7 +10,7 @@ func Lines(err error, stack bool) []string {
 		var line string
 		switch err := err.(type) {
 		case liner:
-			line = err.line(stack)
+			line = err.errorLine(stack)
 		default:
 			line = err.Error()
 		}

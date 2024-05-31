@@ -144,7 +144,7 @@ func (f *fundamental) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (f *fundamental) line(stack bool) string {
+func (f *fundamental) errorLine(stack bool) string {
 	var buf strings.Builder
 	if f.msg != "" {
 		buf.WriteString(f.msg)
@@ -201,7 +201,7 @@ func (w *withStack) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (w *withStack) line(stack bool) string {
+func (w *withStack) errorLine(stack bool) string {
 	if !stack {
 		return w.msg
 	}
@@ -308,7 +308,7 @@ func (w *withMessage) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (w *withMessage) line(stack bool) string {
+func (w *withMessage) errorLine(stack bool) string {
 	return w.msg
 }
 

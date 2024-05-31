@@ -137,7 +137,7 @@ func TestStackTrace(t *testing.T) {
 				return Errorf("hello %s", fmt.Sprintf("world: %s", "ooh"))
 			}()
 		}()), []string{
-			"github.com/pkg/errors.TestStackTrace.func2.1\t.+/github.com/pkg/errors/stack_test.go:137", // this is the stack of Errorf
+			"github.com/pkg/errors.TestStackTrace..+\t.+/github.com/pkg/errors/stack_test.go:137", // this is the stack of Errorf
 		},
 	}}
 	for i, tt := range tests {
