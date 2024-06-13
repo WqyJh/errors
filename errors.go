@@ -101,20 +101,14 @@ import (
 // New returns an error with the supplied message.
 // New also records the stack trace at the point it was called.
 func New(message string) error {
-	return &fundamental{
-		msg:   message,
-		stack: callers(),
-	}
+	return globalErrorsApi.New(message)
 }
 
 // Errorf formats according to a format specifier and returns the string
 // as a value that satisfies error.
 // Errorf also records the stack trace at the point it was called.
 func Errorf(format string, args ...interface{}) error {
-	return &fundamental{
-		msg:   fmt.Sprintf(format, args...),
-		stack: callers(),
-	}
+	return globalErrorsApi.Errorf(format, args...)
 }
 
 // fundamental is an error that has a message and a stack, but no caller.
@@ -161,16 +155,7 @@ func (f *fundamental) errorLine(stack bool) string {
 // WithStack annotates err with a stack trace at the point WithStack was called.
 // If err is nil, WithStack returns nil.
 func WithStack(err error) error {
-	if err == nil {
-		return nil
-	}
-	return &withStack{
-		withMessage{
-			cause: err,
-			msg:   "",
-		},
-		callers(),
-	}
+	return globalErrorsApi.WithStack(err)
 }
 
 type withStack struct {
@@ -218,56 +203,26 @@ func (w *withStack) errorLine(stack bool) string {
 // at the point Wrap is called, and the supplied message.
 // If err is nil, Wrap returns nil.
 func Wrap(err error, message string) error {
-	if err == nil {
-		return nil
-	}
-	return &withStack{
-		withMessage{
-			cause: err,
-			msg:   message,
-		},
-		callers(),
-	}
+	return globalErrorsApi.Wrap(err, message)
 }
 
 // Wrapf returns an error annotating err with a stack trace
 // at the point Wrapf is called, and the format specifier.
 // If err is nil, Wrapf returns nil.
 func Wrapf(err error, format string, args ...interface{}) error {
-	if err == nil {
-		return nil
-	}
-	return &withStack{
-		withMessage{
-			cause: err,
-			msg:   fmt.Sprintf(format, args...),
-		},
-		callers(),
-	}
+	return globalErrorsApi.Wrapf(err, format, args...)
 }
 
 // WithMessage annotates err with a new message.
 // If err is nil, WithMessage returns nil.
 func WithMessage(err error, message string) error {
-	if err == nil {
-		return nil
-	}
-	return &withMessage{
-		cause: err,
-		msg:   message,
-	}
+	return globalErrorsApi.WithMessage(err, message)
 }
 
 // WithMessagef annotates err with the format specifier.
 // If err is nil, WithMessagef returns nil.
 func WithMessagef(err error, format string, args ...interface{}) error {
-	if err == nil {
-		return nil
-	}
-	return &withMessage{
-		cause: err,
-		msg:   fmt.Sprintf(format, args...),
-	}
+	return globalErrorsApi.WithMessagef(err, format, args...)
 }
 
 type withMessage struct {

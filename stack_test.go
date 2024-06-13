@@ -204,21 +204,21 @@ func TestStackTraceFormat(t *testing.T) {
 	}, {
 		stackTrace()[:2],
 		"%s",
-		`\[stack_test.go stack_test.go\]`,
+		`\[extern.go stack_test.go\]`,
 	}, {
 		stackTrace()[:2],
 		"%v",
-		`\[stack_test.go:162 stack_test.go:209\]`,
+		`\[extern.go:325 stack_test.go:209\]`,
 	}, {
 		stackTrace()[:2],
 		"%+v",
 		"\n" +
-			"github.com/pkg/errors.stackTrace\t.+/github.com/pkg/errors/stack_test.go:162\n" +
+			".+extern.go:325\n" +
 			"github.com/pkg/errors.TestStackTraceFormat\t.+/github.com/pkg/errors/stack_test.go:213",
 	}, {
 		stackTrace()[:2],
 		"%#v",
-		`\[\]errors.Frame{stack_test.go:162, stack_test.go:219}`,
+		`\[\]errors.Frame{extern.go:325, stack_test.go:219}`,
 	}}
 
 	for i, tt := range tests {
