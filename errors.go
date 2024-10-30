@@ -138,7 +138,7 @@ func (f *fundamental) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (f *fundamental) errorLine(stack bool) string {
+func (f *fundamental) ErrorLine(stack bool) string {
 	var buf strings.Builder
 	if f.msg != "" {
 		buf.WriteString(f.msg)
@@ -186,7 +186,7 @@ func (w *withStack) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (w *withStack) errorLine(stack bool) string {
+func (w *withStack) ErrorLine(stack bool) string {
 	if !stack {
 		return w.msg
 	}
@@ -263,7 +263,7 @@ func (w *withMessage) Format(s fmt.State, verb rune) {
 	}
 }
 
-func (w *withMessage) errorLine(stack bool) string {
+func (w *withMessage) ErrorLine(stack bool) string {
 	return w.msg
 }
 
@@ -291,4 +291,45 @@ func Cause(err error) error {
 		err = cause.Cause()
 	}
 	return err
+}
+
+type withDetails struct {
+	cause   error
+	details []any
+}
+
+func (w *withDetails) Error() string {
+	return w.cause.Error()
+}
+
+func (w *withDetails) Cause() error { return w.cause }
+
+func (w *withDetails) Unwrap() error {
+	return w.cause
+}
+
+func (w *withDetails) Format(s fmt.State, verb rune) {
+	switch verb {
+	case 'v':
+		if s.Flag('+') {
+			fmt.Fprintf(s, "%+v", w.Cause())
+			fmt.Fprintf(s, globalOptions.StackSep)
+			return
+		}
+		fallthrough
+	case 's', 'q':
+		io.WriteString(s, w.Error())
+	}
+}
+
+func (w *withDetails) ErrorLine(stack bool) string {
+	return ""
+}
+
+func WithDetails(err error, details ...any) error {
+	return globalErrorsApi.WithDetails(err, details...)
+}
+
+func Details(err error) ([]any, bool) {
+	return globalErrorsApi.Details(err)
 }

@@ -92,3 +92,20 @@ func (e *errorsApi) WithMessagef(err error, format string, args ...interface{}) 
 		msg:   fmt.Sprintf(format, args...),
 	}
 }
+
+func (e *errorsApi) WithDetails(err error, details ...any) error {
+	if err == nil {
+		return nil
+	}
+	return &withDetails{
+		cause:   err,
+		details: details,
+	}
+}
+
+func (e *errorsApi) Details(err error) ([]any, bool) {
+	if w, ok := err.(*withDetails); ok {
+		return w.details, true
+	}
+	return nil, false
+}
