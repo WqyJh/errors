@@ -14,7 +14,7 @@ func Lines(err error, stack bool) []string {
 		default:
 			line = err.Error()
 		}
-		if len(line) != 0 {
+		if len(line) > 0 {
 			errors = append(errors, line)
 		}
 		err = Unwrap(err)

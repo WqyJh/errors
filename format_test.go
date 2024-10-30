@@ -378,22 +378,21 @@ func testFormatRegexp(t *testing.T, n int, arg interface{}, format, want string)
 var stackLineR = regexp.MustCompile(`\.`)
 
 // parseBlocks parses input into a slice, where:
-//  - incase entry contains a newline, its a stacktrace
-//  - incase entry contains no newline, its a solo line.
+//   - incase entry contains a newline, its a stacktrace
+//   - incase entry contains no newline, its a solo line.
 //
 // Detecting stack boundaries only works incase the WithStack-calls are
 // to be found on the same line, thats why it is optionally here.
 //
 // Example use:
 //
-// for _, e := range blocks {
-//   if strings.ContainsAny(e, "\n") {
-//     // Match as stack
-//   } else {
-//     // Match as line
-//   }
-// }
-//
+//	for _, e := range blocks {
+//	  if strings.ContainsAny(e, "\n") {
+//	    // Match as stack
+//	  } else {
+//	    // Match as line
+//	  }
+//	}
 func parseBlocks(input string, detectStackboundaries bool) ([]string, error) {
 	return strings.Split(input, "\n"), nil
 }
@@ -476,5 +475,29 @@ func testGenericRecursive(t *testing.T, beforeErr error, beforeWant []string, li
 		if maxDepth > 0 {
 			testGenericRecursive(t, err, want, list, maxDepth-1)
 		}
+	}
+}
+
+func TestFormatWithDetails(t *testing.T) {
+	tests := []struct {
+		err    error
+		format string
+		want   string
+	}{
+		{WithDetails(nil), "%s", ""},
+		{WithDetails(nil), "%v", ""},
+		{WithDetails(nil), "%+v", ""},
+		{WithDetails(io.EOF, "whoops"), "%s", "EOF"},
+		{WithDetails(io.EOF, "whoops"), "%v", "EOF"},
+		{WithDetails(io.EOF, "whoops"), "%+v", "EOF"},
+		{WithDetails(Wrap(io.EOF, "read error"), "whoops", 1, 2.2), "%s", "read error: EOF"},
+		{WithDetails(Wrap(io.EOF, "read error"), "whoops", 1, 2.2), "%v", "read error: EOF"},
+		{WithDetails(Wrap(io.EOF, "read error"), "whoops", 1, 2.2), "%+v", "EOF\nread error\n" +
+			"github.com/pkg/errors.TestFormatWithDetails\t.+/github.com/pkg/errors/format_test.go:495",
+		},
+	}
+
+	for i, tt := range tests {
+		testFormatRegexp(t, i, tt.err, tt.format, tt.want)
 	}
 }

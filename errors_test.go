@@ -250,38 +250,38 @@ func TestErrorEquality(t *testing.T) {
 	}
 }
 
+func TestWithDetailsNil(t *testing.T) {
+	tests := []struct {
+		err error
+	}{
+		{WithDetails(nil)},
+		{WithDetails(nil, "whoops")},
+		{WithDetails(nil, "whoops", 1, 2.2)},
+	}
+
+	for _, tt := range tests {
+		if tt.err != nil {
+			t.Errorf("WithDetails(%v): got %v, expected nil", tt.err, tt.err)
+		}
+	}
+}
+
 func TestWithDetails(t *testing.T) {
 	tests := []struct {
 		err     error
 		details []any
 		want    string
 	}{
-		{WithDetails(nil, "whoops"), nil, ""},
-		{WithDetails(nil), nil, ""},
 		{WithDetails(io.EOF, "whoops"), []any{"whoops"}, "EOF"},
 		{WithDetails(io.EOF, "whoops", "foo"), []any{"whoops", "foo"}, "EOF"},
 		{WithDetails(WithMessage(io.EOF, "read error"), "whoops", 1, 2.2), []any{"whoops", 1, 2.2}, "read error: EOF"},
 	}
 
 	for _, tt := range tests {
-		got := WithDetails(tt.err, tt.details...)
-		if tt.err == nil {
-			if got != nil {
-				t.Errorf("WithDetails(nil, %v): got %v, expected nil", tt.details, got)
-			}
-			details, ok := Details(got)
-			if ok {
-				t.Errorf("WithDetails(nil, %v): got details: %v, expected nil", tt.details, details)
-			}
-			if details != nil {
-				t.Errorf("WithDetails(nil, %v): got details: %v, expected nil", tt.details, details)
-			}
-			continue
+		if tt.err.Error() != tt.want {
+			t.Errorf("WithDetails(%v, %v): got: %v, want %v", tt.err, tt.details, tt.err, tt.want)
 		}
-		if got.Error() != tt.want {
-			t.Errorf("WithDetails(%v, %v): got: %v, want %v", tt.err, tt.details, got, tt.want)
-		}
-		details, ok := Details(got)
+		details, ok := Details(tt.err)
 		if !ok {
 			t.Errorf("WithDetails(%v, %v): got no details", tt.err, tt.details)
 		}

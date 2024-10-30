@@ -119,3 +119,20 @@ func TestLinesNoStack(t *testing.T) {
 		assert.Equal(t, tt.lines, got)
 	}
 }
+
+func TestLinesWithDetails(t *testing.T) {
+	tests := []struct {
+		err   error
+		lines []string
+	}{
+		{WithDetails(nil), []string{}},
+		{WithDetails(nil, "whoops"), []string{}},
+		{WithDetails(New("foo"), "whoops", 1, 2.2), []string{"foo"}},
+		{WithDetails(Wrap(New("foo"), "bar"), "whoops", 1, 2.2), []string{"bar", "foo"}},
+	}
+
+	for _, tt := range tests {
+		got := Lines(tt.err, false)
+		assert.Equal(t, tt.lines, got)
+	}
+}
